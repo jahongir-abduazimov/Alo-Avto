@@ -1,11 +1,23 @@
-// app/webapp/page.tsx
 'use client';
 
 import { useEffect } from 'react';
 
+interface TelegramWebApp {
+  expand: () => void;
+  // kerak bo‘lsa boshqa metodlar/propertilar ham qo‘shish mumkin
+}
+
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: TelegramWebApp;
+    };
+  }
+}
+
 export default function WebApp() {
   useEffect(() => {
-    const tg = (window as any).Telegram?.WebApp;
+    const tg = window.Telegram?.WebApp;
     tg?.expand();
   }, []);
 
