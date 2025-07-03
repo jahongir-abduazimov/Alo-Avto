@@ -1,7 +1,6 @@
 "use client";
 import HeaderDashboard from "@/components/dashboard/header";
 import { Icon } from "@/components/icon";
-import AppBar from "@/components/layout/app-bar";
 import Container from "@/components/layout/container";
 import {
   Table,

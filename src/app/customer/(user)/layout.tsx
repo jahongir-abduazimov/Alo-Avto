@@ -1,4 +1,3 @@
-import AppBar from "@/components/layout/app-bar";
 import Container from "@/components/layout/container";
 import Navbar from "@/components/layout/navbar";
 import React from "react";
