@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface ClientData {
   name: string;
@@ -169,7 +170,9 @@ export default function AddClientForm() {
                 className="hidden"
               />
               {clientData.passportImage ? (
-                <img
+                <Image
+                  width={56}
+                  height={56}
                   src={clientData.passportImage || "/placeholder.svg"}
                   alt="Passport"
                   className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md mb-2"
@@ -205,7 +208,9 @@ export default function AddClientForm() {
                 className="hidden"
               />
               {clientData.licenseImage ? (
-                <img
+                <Image
+                  width={56}
+                  height={56}
                   src={clientData.licenseImage || "/placeholder.svg"}
                   alt="License"
                   className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md mb-2"
@@ -241,7 +246,9 @@ export default function AddClientForm() {
                 className="hidden"
               />
               {clientData.contractImage ? (
-                <img
+                <Image
+                  width={56}
+                  height={56}
                   src={clientData.contractImage || "/placeholder.svg"}
                   alt="Contract"
                   className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md mb-2"

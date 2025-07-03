@@ -41,7 +41,14 @@ const payments = Array(5).fill({
   car: "Nexia",
 });
 
-const StatCard = ({ icon, title, value, percent }: any) => (
+type StatCardProps = {
+  icon: React.ReactNode;
+  title: string;
+  value: string;
+  percent: string;
+};
+
+const StatCard = ({ icon, title, value, percent }: StatCardProps) => (
   <div className="py-4 bg-white">
     <div className="flex items-center gap-3">
       <div className="bg-black size-10 flex justify-center items-center rounded-full">

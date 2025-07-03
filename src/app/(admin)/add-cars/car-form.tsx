@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, isValid } from "date-fns";
+import Image from "next/image";
 
 export default function CarForm() {
   const [activeTab, setActiveTab] = useState("purchase");
@@ -583,12 +584,16 @@ export default function CarForm() {
             <div className="space-y-1.5">
               <Label className={labelBaseClasses}>До/После</Label>
               <div className="grid grid-cols-2 gap-2">
-                <img
+                <Image
+                  width={300}
+                  height={200}
                   src={carData.beforeImage || "/before.png"}
                   alt="Before"
                   className="rounded-lg object-cover w-full aspect-[3/2]"
                 />
-                <img
+                <Image
+                  width={300}
+                  height={200}
                   src={carData.afterImage || "/placeholder.svg"}
                   alt="After"
                   className="rounded-lg object-cover w-full aspect-[3/2]"
@@ -614,7 +619,9 @@ export default function CarForm() {
               <div className="flex items-center justify-center gap-3 mb-2">
                 {carData.uploadedCarImage ? (
                   <div className="relative">
-                    <img
+                    <Image
+                      width={56}
+                      height={56}
                       src={carData.uploadedCarImage || "/placeholder.svg"}
                       alt="Uploaded"
                       className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md"
