@@ -1,0 +1,11 @@
+import AllCarsClientPage from "@/components/all-cars";
+import Container from "@/components/layout/container";
+import React from "react";
+
+export default function AllCarspage() {
+  return (
+    <Container>
+      <AllCarsClientPage />
+    </Container>
+  );
+}
