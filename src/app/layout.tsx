@@ -24,6 +24,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script src="https://telegram.org/js/telegram-web-app.js" />
+      </head>
       <body
         suppressHydrationWarning
         className={`${lexend.variable} antialiased bg-blue-300 `}
