@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Lexend } from "next/font/google";
 import "./globals.css";
 import AppBar from "@/components/layout/app-bar";
+import Script from "next/script";
 
 const lexend = Lexend({
   subsets: ["latin"],
@@ -24,6 +25,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <Script
+          src="https://telegram.org/js/telegram-web-app.js"
+          strategy="lazyOnload"
+        />
+      </head>
       <body
         suppressHydrationWarning
         className={`${lexend.variable} antialiased bg-blue-300 `}
