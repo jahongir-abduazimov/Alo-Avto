@@ -31,18 +31,20 @@ export default function AddAppModal({
 
   const handleInstall = async () => {
     if (isTelegram) {
+      // ✅ Telegram WebView ichida Chrome'ga to'g'ridan-to'g'ri o‘tkazamiz
       const url = window.location.href;
       const intentUrl = `intent://${url.replace(
         /^https?:\/\//,
         ""
       )}#Intent;package=com.android.chrome;scheme=https;end`;
       window.location.href = intentUrl;
-      return;
     } else if (isSafari) {
+      // ✅ iOS Safari foydalanuvchisiga alert orqali tushuntirish
       alert(
         `Safari'da ilovani o‘rnatish uchun:\n\n1. Share tugmasini bosing\n2. 'Add to Home Screen' ni tanlang\n3. 'Add' tugmasini bosing`
       );
     } else if (deferredPrompt) {
+      // ✅ Android Chrome uchun prompt chiqarish
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === "accepted") {
@@ -52,6 +54,7 @@ export default function AddAppModal({
       }
       setDeferredPrompt(null);
     } else {
+      // ❌ Boshqa holatlar (desktop, support yo‘q, etc.)
       alert("Ilovani qo‘shish imkoniyati hozircha mavjud emas.");
     }
 
@@ -66,7 +69,7 @@ export default function AddAppModal({
         <h2 className="text-lg font-semibold mb-2">Ilovani qo‘shish</h2>
         <p className="text-sm text-gray-600 mb-4">
           {isTelegram
-            ? "Brauzerda ochib, ilovani bosh ekranga qo‘shishingiz mumkin."
+            ? "Brauzerda (Chrome) ochib, ilovani bosh ekranga qo‘shishingiz mumkin."
             : isSafari
             ? "Safari’da 'Share' tugmasini bosib, 'Add to Home Screen' ni tanlang."
             : "Ilovani tezkor kirish uchun bosh ekranga qo‘shing."}
@@ -77,7 +80,7 @@ export default function AddAppModal({
             className="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition"
           >
             {isTelegram
-              ? "Brauzerda ochish"
+              ? "Chrome’da ochish"
               : isSafari
               ? "Qo‘llanma"
               : "Qo‘shish"}
