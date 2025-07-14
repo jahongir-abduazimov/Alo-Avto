@@ -31,14 +31,12 @@ export default function AddAppModal({
 
   const handleInstall = async () => {
     if (isTelegram) {
-      if (window.Telegram?.WebApp?.openLink) {
-        window.Telegram.WebApp.openLink(window.location.href);
-      } else {
-        window.open(window.location.href, "_blank");
-      }
+      alert(
+        `Ilovani bosh ekranga qo‘shish uchun sahifani Chrome’da oching:\n\n1. Telegram oynasining yuqorisidagi ⋮ (uch nuqta) tugmasini bosing\n2. "Open in browser" ni tanlang\n3. Chrome’da sahifa ochiladi va 'Add to Home Screen' chiqadi`
+      );
     } else if (isSafari) {
       alert(
-        `Safari'da ilovani o‘rnatish uchun:\n\n1. Share tugmasini bosing\n2. 'Add to Home Screen' ni tanlang\n3. 'Add' tugmasini bosing`
+        `Safari'da ilovani o‘rnatish uchun:\n\n1. Pastdagi 'Share' tugmasini bosing\n2. 'Add to Home Screen' ni tanlang\n3. 'Add' tugmasini bosing`
       );
     } else if (deferredPrompt) {
       deferredPrompt.prompt();
@@ -63,26 +61,18 @@ export default function AddAppModal({
       <div className="bg-white rounded-xl p-6 w-[90%] max-w-sm shadow-xl">
         <h2 className="text-lg font-semibold mb-2">Ilovani qo‘shish</h2>
         <p className="text-sm text-gray-600 mb-4">
-          {
-            isTelegram
-              ? "Brauzerda ochib, ilovani bosh ekranga qo‘shishingiz mumkin."
-              : isSafari
-              ? "Safari’da 'Share' tugmasini bosib, 'Add to Home Screen' ni tanlang."
-              : "Ilovani tezkor kirish uchun bosh ekranga qo‘shing."
-          }
+          {isTelegram
+            ? "Telegram ichida o‘rnatish ishlamaydi. Iltimos, sahifani Chrome’da oching."
+            : isSafari
+            ? "Safari’da 'Share' tugmasini bosib, 'Add to Home Screen' ni tanlang."
+            : "Ilovani tezkor kirish uchun bosh ekranga qo‘shing."}
         </p>
         <div className="flex gap-2">
           <button
             onClick={handleInstall}
             className="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition"
           >
-            {
-              isTelegram
-                ? "Brauzerda ochish"
-                : isSafari
-                ? "Qo‘llanma"
-                : "Qo‘shish"
-            }
+            {isTelegram ? "Qo‘llanma" : isSafari ? "Qo‘llanma" : "Qo‘shish"}
           </button>
           <button
             onClick={onClose}
