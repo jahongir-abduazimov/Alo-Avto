@@ -4,87 +4,47 @@ import Container from "@/components/layout/container";
 import { Pagination } from "@/components/pagination";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TransactionDrawer } from "./transaction-drawer";
 import TypographyH1 from "@/components/ui/typography-h1";
-
-interface Transaction {
-  id: string;
-  customerName: string;
-  carNumber: string;
-  paymentMethod: string;
-  date: string;
-  amount: number;
-  description: string;
-  status: string;
-  address: string;
-  workingHours: string;
-}
-
+import { fetchPayments } from "@/lib/api";
+import type { Payment } from "@/types/payment";
 export default function TransactionClient() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedTransaction, setSelectedTransaction] =
-    useState<Transaction | null>(null);
+    useState<Payment | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    setLoading(true);
+    fetchPayments()
+      .then((data) => {
+        setPayments(data.results || []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message || "Xatolik yuz berdi");
+        setLoading(false);
+      });
+  }, []);
 
-  // Sample transaction data
-  const transactions: Transaction[] = [
-    {
-      id: "01",
-      customerName: "Utkir Giyosov",
-      carNumber: "01 A 123 AB",
-      paymentMethod: "Наличные",
-      date: "27.05.2025",
-      amount: 100,
-      description:
-        "Оплата аренды авто. Клиент: Utkir Giyosov, Период: 01.06.2025 — 30.06.2025. Метод: Наличные.",
-      status: "Ожидается подтверждение",
-      address: 'ИП "AloAvto", г. Ташкент , ул. Примерная, д. 10, офис 5',
-      workingHours: "Пн-Пт: 10:00-18:00",
-    },
-    {
-      id: "02",
-      customerName: "Aziz Azizov",
-      carNumber: "01 B 456 CD",
-      paymentMethod: "Карта",
-      date: "26.05.2025",
-      amount: 150,
-      description:
-        "Оплата аренды авто. Клиент: Aziz Azizov, Период: 02.06.2025 — 30.06.2025. Метод: Карта.",
-      status: "Ожидается подтверждение",
-      address: 'ИП "AloAvto", г. Ташкент , ул. Примерная, д. 10, офис 5',
-      workingHours: "Пн-Пт: 10:00-18:00",
-    },
-    {
-      id: "03",
-      customerName: "Sardor Karimov",
-      carNumber: "01 C 789 EF",
-      paymentMethod: "Наличные",
-      date: "25.05.2025",
-      amount: 200,
-      description:
-        "Оплата аренды авто. Клиент: Sardor Karimov, Период: 03.06.2025 — 30.06.2025. Метод: Наличные.",
-      status: "Ожидается подтверждение",
-      address: 'ИП "AloAvto", г. Ташкент , ул. Примерная, д. 10, офис 5',
-      workingHours: "Пн-Пт: 10:00-18:00",
-    },
-    {
-      id: "04",
-      customerName: "Bobur Toshev",
-      carNumber: "01 D 012 GH",
-      paymentMethod: "Карта",
-      date: "24.05.2025",
-      amount: 120,
-      description:
-        "Оплата аренды авто. Клиент: Bobur Toshev, Период: 04.06.2025 — 30.06.2025. Метод: Карта.",
-      status: "Ожидается подтверждение",
-      address: 'ИП "AloAvto", г. Ташкент , ул. Примерная, д. 10, офис 5',
-      workingHours: "Пн-Пт: 10:00-18:00",
-    },
-  ];
+  // Filter payments based on search term
+  const filteredPayments = payments.filter(
+    (payment) =>
+      payment.user_full_name
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      payment.car_gost_number
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      payment.id.toString().includes(searchTerm)
+  );
 
-  const totalItems = transactions.length;
+  const totalItems = filteredPayments.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   const handlePageChange = (page: number) => {
@@ -96,7 +56,7 @@ export default function TransactionClient() {
     setCurrentPage(1); // Reset to first page
   };
 
-  const handleTransactionClick = (transaction: Transaction) => {
+  const handleTransactionClick = (transaction: Payment) => {
     setSelectedTransaction(transaction);
     setIsDrawerOpen(true);
   };
@@ -108,7 +68,7 @@ export default function TransactionClient() {
 
   // Get current page transactions
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentTransactions = transactions.slice(
+  const currentPayments = filteredPayments.slice(
     startIndex,
     startIndex + itemsPerPage
   );
@@ -121,31 +81,35 @@ export default function TransactionClient() {
         <Input
           type="text"
           placeholder="Search"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-12 py-6 text-lg bg-gray-50 border-gray-200 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>
-      <div className="space-y-4">
-        {currentTransactions.map((transaction) => (
-          <div
-            key={transaction.id}
-            className="border rounded-xl px-4 py-3 flex justify-between cursor-pointer hover:bg-gray-50 transition-colors"
-            onClick={() => handleTransactionClick(transaction)}
-          >
-            <span className="text-base text-[#363636]">
-              ID:{transaction.id}
-            </span>
-            <span className="text-base text-[#363636]">
-              {transaction.customerName}
-            </span>
-            <span className="text-base text-[#363636]">
-              {transaction.carNumber}
-            </span>
-            <span className="text-base text-[#363636]">
-              {transaction.paymentMethod}
-            </span>
-          </div>
-        ))}
-      </div>
+      {loading ? (
+        <div className="text-center py-8">Загрузка...</div>
+      ) : error ? (
+        <div className="text-center text-red-500 py-8">{error}</div>
+      ) : (
+        <div className="space-y-4">
+          {currentPayments.map((payment) => (
+            <div
+              key={payment.id}
+              className="border rounded-xl px-4 py-3 flex justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+              onClick={() => handleTransactionClick(payment)}
+            >
+              <span className="text-base text-[#363636]">ID:{payment.id}</span>
+              <span className="text-base text-[#363636]">
+                {payment.user_full_name || payment.user_first_name || "-"}
+              </span>
+              <span className="text-base text-[#363636]">
+                {payment.car_gost_number || payment.rental_car_name || "-"}
+              </span>
+              <span className="text-base text-[#363636]">{payment.method}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Transaction Drawer */}
       {selectedTransaction && (

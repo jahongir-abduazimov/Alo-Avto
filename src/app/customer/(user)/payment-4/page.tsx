@@ -1,40 +1,140 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { PaymentMethodCard } from "@/components/payment-method-card";
 import Container from "@/components/layout/container";
 import { Icon } from "@/components/icon";
 import { useRouter } from "next/navigation";
+import { useLoanData } from "@/components/payments";
+import { useTokenExpiration } from "@/lib/hooks";
 
 export default function PaymentFormPage() {
+  // Use token expiration hook
+  useTokenExpiration();
+
   const [paymentId, setPaymentId] = useState("12345678");
-  const [amount, setAmount] = useState("100");
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("humo");
+  const [amount, setAmount] = useState("0");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("uzcard");
   const [isAmountEditable, setIsAmountEditable] = useState(false);
+  const [transactionId, setTransactionId] = useState("");
   const route = useRouter();
+  const { loanData, monthlyPayments } = useLoanData();
 
   const commission = 1; // Fixed commission of $1
   const totalAmount = +amount + commission;
 
+  // Generate transaction ID on component mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedTransactionId = localStorage.getItem("transactionId");
+      if (storedTransactionId) {
+        const nextId = parseInt(storedTransactionId) + 1;
+        localStorage.setItem("transactionId", nextId.toString());
+        setTransactionId(nextId.toString());
+      } else {
+        localStorage.setItem("transactionId", "1");
+        setTransactionId("1");
+      }
+    }
+  }, []);
+
+  // Set amount based on payment type
+  useEffect(() => {
+    if (typeof window !== "undefined" && monthlyPayments) {
+      const paymentType = localStorage.getItem("paymentType");
+      if (paymentType === "schedule") {
+        // Next unpaid monthly payment
+        const nextUnpaid = monthlyPayments.find(
+          (mp) => mp.payment_status !== "confirmed"
+        );
+        if (nextUnpaid) setAmount(nextUnpaid.amount.toString());
+      } else if (paymentType === "full") {
+        // Sum of all unconfirmed monthly payments
+        const total = monthlyPayments
+          .filter((mp) => mp.payment_status !== "confirmed")
+          .reduce((sum: number, mp) => sum + Number(mp.amount), 0);
+        setAmount(total.toString());
+      }
+    }
+  }, [monthlyPayments]);
+
   const paymentMethods = [
-    { id: "humo", name: "HUMO", logo: "/images/humo.png" },
-    { id: "uzcard", name: "UzCard", logo: "/images/uzcard.png" },
-    { id: "visa", name: "VISA", logo: "/images/visa.png" },
-    { id: "mastercard", name: "Mastercard", logo: "/images/mastercard.png" },
+    {
+      id: "humo",
+      name: "HUMO",
+      logo: "/images/humo.png",
+      disabled: true,
+      numer: 1321231231231231,
+      date: "10/29",
+    },
+    {
+      id: "uzcard",
+      name: "UzCard",
+      logo: "/images/uzcard.png",
+      disabled: false,
+      numer: 5614681813270042,
+      date: "12/26",
+    },
+    {
+      id: "visa",
+      name: "VISA",
+      logo: "/images/visa.png",
+      disabled: false,
+      numer: 4604720007103455,
+      date: "10/29",
+    },
+    {
+      id: "mastercard",
+      name: "Mastercard",
+      logo: "/images/mastercard.png",
+      disabled: true,
+      numer: 1231231231231231,
+      date: "10/29",
+    },
   ];
 
+  // Ensure selected payment method is not disabled
+  useEffect(() => {
+    const currentMethod = paymentMethods.find(
+      (method) => method.id === selectedPaymentMethod
+    );
+    if (currentMethod?.disabled) {
+      const firstEnabledMethod = paymentMethods.find(
+        (method) => !method.disabled
+      );
+      if (firstEnabledMethod) {
+        setSelectedPaymentMethod(firstEnabledMethod.id);
+      }
+    }
+  }, [selectedPaymentMethod]);
+
   const handlePayment = () => {
-    // Payment processing logic would go here
-    console.log("Processing payment:", {
-      paymentId,
-      amount,
-      paymentMethod: selectedPaymentMethod,
-      commission,
-      total: totalAmount,
-    });
-    route.push("/customer/payment-5"); // Redirect to next page after payment
+    // Store payment data in localStorage for next steps
+    if (typeof window !== "undefined") {
+      const selectedCard = paymentMethods.find(
+        (method) => method.id === selectedPaymentMethod
+      );
+
+      localStorage.setItem("paymentAmount", amount);
+      localStorage.setItem(
+        "paymentMethod",
+        localStorage.getItem("paymentMethod") || "card"
+      ); // Use the method from payment-2
+      localStorage.setItem("cardType", selectedPaymentMethod); // Store card type separately
+      localStorage.setItem("transactionId", transactionId);
+
+      // Store additional card details
+      if (selectedCard) {
+        localStorage.setItem("cardNumber", String(selectedCard.numer));
+        localStorage.setItem("cardName", selectedCard.name);
+        localStorage.setItem("cardDate", selectedCard.date);
+        localStorage.setItem("cardLogo", selectedCard.logo);
+      }
+    }
+
+    route.push("/customer/payment-5");
   };
 
   return (
@@ -74,15 +174,23 @@ export default function PaymentFormPage() {
             </Label>
             <div className="bg-gray-100 flex items-center rounded-2xl">
               <input
-                // readOnly
+                readOnly={
+                  typeof window !== "undefined" &&
+                  localStorage.getItem("paymentType") === "schedule"
+                }
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 className="text-gray-900 h-12 indent-4 font-medium border-none outline-none  size-full"
               />
-              <button onClick={() => setIsAmountEditable(!isAmountEditable)}>
-                <Icon name="magnit" />
-              </button>
+              {typeof window !== "undefined" &&
+                localStorage.getItem("paymentType") !== "schedule" && (
+                  <button
+                    onClick={() => setIsAmountEditable(!isAmountEditable)}
+                  >
+                    <Icon name="magnit" />
+                  </button>
+                )}
             </div>
           </div>
 
@@ -100,6 +208,9 @@ export default function PaymentFormPage() {
                   logo={method.logo}
                   isSelected={selectedPaymentMethod === method.id}
                   onSelect={setSelectedPaymentMethod}
+                  disabled={method.disabled}
+                  numer={method.numer}
+                  date={method.date}
                 />
               ))}
             </div>

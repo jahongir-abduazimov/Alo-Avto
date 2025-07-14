@@ -11,25 +11,13 @@ import {
 } from "@/components/ui/drawer";
 import { Badge } from "@/components/ui/badge";
 import { FileUploadArea } from "@/components/file-upload-area";
+import type { Payment } from "@/types/payment";
 type DrawerStep = "details" | "confirmed" | "waiting";
-
-interface TransactionData {
-  id: string;
-  customerName: string;
-  carNumber: string;
-  paymentMethod: string;
-  date: string;
-  amount: number;
-  description: string;
-  status: string;
-  address: string;
-  workingHours: string;
-}
 
 interface TransactionDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  transactionData: TransactionData;
+  transactionData: Payment;
 }
 
 export function TransactionDrawer({
@@ -72,6 +60,10 @@ export function TransactionDrawer({
     }
   };
 
+  // Helper: fallback for undefined/null
+  const safe = (val: any, fallback = "-") =>
+    val !== undefined && val !== null && val !== "" ? val : fallback;
+
   const renderContent = () => {
     switch (currentStep) {
       case "details":
@@ -79,10 +71,10 @@ export function TransactionDrawer({
           <>
             <div className="text-center mb-6">
               <div className="text-gray-500 text-sm mb-2">
-                {transactionData.date}
+                {safe(transactionData.payment_date)}
               </div>
               <h1 className="font-bold text-5xl mb-3">
-                ${transactionData.amount}
+                ${safe(transactionData.amount)}
               </h1>
 
               {/* Payment Method Dropdown */}
@@ -90,7 +82,7 @@ export function TransactionDrawer({
                 variant="outline"
                 className="bg-blue-50 border-blue-200 text-blue-600 rounded-xl px-6"
               >
-                {transactionData.paymentMethod}
+                {safe(transactionData.method)}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -109,20 +101,53 @@ export function TransactionDrawer({
               {/* Transaction Description */}
               <div className="bg-gray-50 rounded-2xl p-4">
                 <p className="text-sm text-gray-700 leading-relaxed">
-                  {transactionData.description}
+                  {safe(transactionData.notes)}
                 </p>
               </div>
 
               <div>
-                <h3 className="font-semibold mb-2">
-                  Инструкция при выборе Оплата в офисе:
-                </h3>
+                <h3 className="font-semibold mb-2">Информация о платеже:</h3>
                 <div className="text-sm space-y-1">
                   <p>
-                    <strong>Адрес для оплаты:</strong>
+                    <strong>Плательщик:</strong>{" "}
+                    {safe(transactionData.user_full_name) ||
+                      safe(transactionData.user_first_name) ||
+                      safe(transactionData.user_id)}
                   </p>
-                  <p>{transactionData.address}</p>
-                  <p>{transactionData.workingHours}</p>
+                  <p>
+                    <strong>Машина:</strong>{" "}
+                    {safe(transactionData.car_gost_number)}{" "}
+                    {safe(transactionData.car_brand)}{" "}
+                    {safe(transactionData.car_model)}
+                  </p>
+                  <p>
+                    <strong>Тип платежа:</strong> {safe(transactionData.type)}
+                  </p>
+                  <p>
+                    <strong>Статус:</strong> {safe(transactionData.status)}
+                  </p>
+                  <p>
+                    <strong>Дата создания:</strong>{" "}
+                    {safe(transactionData.created_at)}
+                  </p>
+                  <p>
+                    <strong>Дата оплаты:</strong>{" "}
+                    {safe(transactionData.payment_date)}
+                  </p>
+                  <p>
+                    <strong>Срок оплаты:</strong>{" "}
+                    {safe(transactionData.due_date)}
+                  </p>
+                  <p>
+                    <strong>Invoice №:</strong>{" "}
+                    {safe(transactionData.invoice_number)}
+                  </p>
+                  {transactionData.month_number && (
+                    <p>
+                      <strong>Месяц (schedule):</strong>{" "}
+                      {transactionData.month_number}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -142,7 +167,7 @@ export function TransactionDrawer({
                   <p className="text-sm text-gray-600 mb-2">Сумма к оплате:</p>
                   <div className="bg-gray-100 rounded-lg p-3">
                     <span className="font-semibold">
-                      ${transactionData.amount}
+                      ${safe(transactionData.amount)}
                     </span>
                   </div>
                 </div>
@@ -153,10 +178,10 @@ export function TransactionDrawer({
                   <strong>Что делать:</strong>
                 </p>
                 <p>1. Приходите в наш офис.</p>
-                <p>2. Оплатите заказ наличными.</p>
+                <p>2. Оплатите заказ наличными или картой.</p>
                 <p>
                   3. Сообщите оператору номер вашего заказа: #
-                  {transactionData.id}
+                  {safe(transactionData.id)}
                 </p>
                 <p>4. После подтверждения оплаты вы получите уведомление.</p>
               </div>
@@ -164,7 +189,7 @@ export function TransactionDrawer({
               {/* Status */}
               <div className="text-center">
                 <span className="text-green-600 font-medium">
-                  {transactionData.status}
+                  {safe(transactionData.status)}
                 </span>
               </div>
             </div>
@@ -176,30 +201,63 @@ export function TransactionDrawer({
           <>
             <div className="text-center mb-6">
               <div className="text-gray-500 text-sm mb-2">
-                {transactionData.date}
+                {safe(transactionData.payment_date)}
               </div>
               <h1 className="font-bold text-5xl mb-3">
-                ${transactionData.amount}
+                ${safe(transactionData.amount)}
               </h1>
               <Badge
                 variant="secondary"
                 className="bg-blue-100 text-blue-600 hover:bg-blue-100"
               >
-                {transactionData.paymentMethod} ↓
+                {safe(transactionData.method)} ↓
               </Badge>
             </div>
 
             <div className="space-y-4">
               <div>
-                <h3 className="font-semibold mb-2">
-                  Инструкция при выборе Оплата в офисе:
-                </h3>
+                <h3 className="font-semibold mb-2">Информация о платеже:</h3>
                 <div className="text-sm space-y-1">
                   <p>
-                    <strong>Адрес для оплаты:</strong>
+                    <strong>Плательщик:</strong>{" "}
+                    {safe(transactionData.user_full_name) ||
+                      safe(transactionData.user_first_name) ||
+                      safe(transactionData.user_id)}
                   </p>
-                  <p>{transactionData.address}</p>
-                  <p>{transactionData.workingHours}</p>
+                  <p>
+                    <strong>Машина:</strong>{" "}
+                    {safe(transactionData.car_gost_number)}{" "}
+                    {safe(transactionData.car_brand)}{" "}
+                    {safe(transactionData.car_model)}
+                  </p>
+                  <p>
+                    <strong>Тип платежа:</strong> {safe(transactionData.type)}
+                  </p>
+                  <p>
+                    <strong>Статус:</strong> {safe(transactionData.status)}
+                  </p>
+                  <p>
+                    <strong>Дата создания:</strong>{" "}
+                    {safe(transactionData.created_at)}
+                  </p>
+                  <p>
+                    <strong>Дата оплаты:</strong>{" "}
+                    {safe(transactionData.payment_date)}
+                  </p>
+                  <p>
+                    <strong>Срок оплаты:</strong>{" "}
+                    {safe(transactionData.due_date)}
+                  </p>
+                  <p>
+                    <strong>Invoice №:</strong>{" "}
+                    {safe(transactionData.invoice_number)}
+                  </p>
+                  {transactionData.month_number && (
+                    <p>
+                      <strong>Месяц (schedule):</strong>{" "}
+                      {transactionData.month_number}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -210,23 +268,17 @@ export function TransactionDrawer({
                   </p>
                   <div className="bg-gray-100 rounded-lg p-3 flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span className="text-sm font-semibold">01.01.2025</span>
+                    <span className="text-sm">{selectedDate}</span>
                   </div>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600 mb-2">Сумма к оплате:</p>
                   <div className="bg-gray-100 rounded-lg p-3">
                     <span className="font-semibold">
-                      ${transactionData.amount}
+                      ${safe(transactionData.amount)}
                     </span>
                   </div>
                 </div>
-              </div>
-
-              <div className="bg-gray-50 rounded-2xl p-4">
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {transactionData.description}
-                </p>
               </div>
 
               <div className="text-sm space-y-1">
@@ -234,16 +286,18 @@ export function TransactionDrawer({
                   <strong>Что делать:</strong>
                 </p>
                 <p>1. Приходите в наш офис.</p>
-                <p>2. Оплатите заказ наличными.</p>
+                <p>2. Оплатите заказ наличными или картой.</p>
                 <p>
                   3. Сообщите оператору номер вашего заказа: #
-                  {transactionData.id}
+                  {safe(transactionData.id)}
                 </p>
                 <p>4. После подтверждения оплаты вы получите уведомление.</p>
               </div>
 
               <div className="text-center">
-                <p className="text-sm font-medium">Статус оплаты Ожидается</p>
+                <span className="text-yellow-600 font-medium">
+                  Ожидается подтверждение
+                </span>
               </div>
             </div>
           </>
@@ -251,20 +305,44 @@ export function TransactionDrawer({
 
       case "confirmed":
         return (
-          <div className="text-center py-8">
-            <div className="mb-8">
-              <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
-                  <Check className="w-8 h-8 text-white" />
-                </div>
+          <>
+            <div className="text-center mb-6">
+              <div className="text-gray-500 text-sm mb-2">
+                {safe(transactionData.payment_date)}
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Спасибо за
-                <br />
-                подтверждение
-              </h2>
+              <h1 className="font-bold text-5xl mb-3">
+                ${safe(transactionData.amount)}
+              </h1>
+              <Badge
+                variant="secondary"
+                className="bg-green-100 text-green-600 hover:bg-green-100"
+              >
+                Подтверждено
+              </Badge>
             </div>
-          </div>
+
+            <div className="space-y-4">
+              <div className="bg-green-50 rounded-2xl p-4 text-center">
+                <Check className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                <h3 className="font-semibold text-green-700 mb-2">
+                  Оплата подтверждена!
+                </h3>
+                <p className="text-green-600">
+                  Спасибо за оплату. Ваш платеж был успешно обработан.
+                </p>
+              </div>
+
+              <div className="bg-gray-50 rounded-2xl p-4">
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {safe(transactionData.notes)}
+                </p>
+              </div>
+
+              <div className="text-center">
+                <span className="text-green-600 font-medium">Подтверждено</span>
+              </div>
+            </div>
+          </>
         );
 
       default:
@@ -274,34 +352,27 @@ export function TransactionDrawer({
 
   return (
     <Drawer open={isOpen} onOpenChange={handleDrawerClose}>
-      <DrawerContent className="h-[85vh]">
-        <div className="mx-auto w-full max-w-sm h-full flex flex-col">
-          {/* Header - Fixed */}
-          <DrawerHeader className="text-center pb-4 flex-shrink-0">
-            <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
-            <DrawerTitle className="text-xl font-semibold">
-              Детали транзакции - ID:{transactionData.id}
-            </DrawerTitle>
+      <DrawerContent className="flex flex-col custom-drawer-content">
+        <div className="mx-auto w-full max-w-sm flex flex-col flex-1 pb-4">
+          <DrawerHeader>
+            <DrawerTitle className="text-center">Детали транзакции</DrawerTitle>
           </DrawerHeader>
 
-          {/* Content - Scrollable */}
-          <div className="flex-1 overflow-y-auto px-4 pb-4">
-            {renderContent()}
-          </div>
+          <div className="flex-1 px-4 overflow-y-auto">{renderContent()}</div>
 
-          {/* Footer - Fixed */}
-          <div className="flex-shrink-0 border-t  bg-white px-4 py-8">
+          <div className="px-4 pt-4">
             {currentStep === "details" && (
-              <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-4">
                 <Button
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-2xl h-12 text-base font-medium"
+                  variant="outline"
                   onClick={handleConfirmArrival}
+                  className="rounded-full"
                 >
-                  Подтвердите приезд
+                  Подтвердить прибытие
                 </Button>
                 <Button
-                  className="w-full bg-green-500 hover:bg-green-600 text-white rounded-2xl h-12 text-base font-medium"
                   onClick={handlePayment}
+                  className="rounded-full bg-blue-500 text-white hover:bg-blue-600"
                 >
                   Оплатить
                 </Button>
@@ -310,20 +381,19 @@ export function TransactionDrawer({
 
             {currentStep === "waiting" && (
               <Button
-                variant="outline"
-                className="w-full rounded-2xl h-12"
-                onClick={handleReturnToMain}
+                onClick={handlePayment}
+                className="w-full rounded-full bg-blue-500 text-white hover:bg-blue-600"
               >
-                Возвращаем Главный
+                Оплатить
               </Button>
             )}
 
             {currentStep === "confirmed" && (
               <Button
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-2xl h-12"
                 onClick={handleReturnToMain}
+                className="w-full rounded-full bg-green-500 text-white hover:bg-green-600"
               >
-                Возвращаем Главный
+                Вернуться к списку
               </Button>
             )}
           </div>

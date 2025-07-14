@@ -7,7 +7,7 @@ interface PaginationProps {
   currentPage: number;
   totalPages: number;
   itemsPerPage: number;
-  totalItems: number;
+  totalItems?: number;
   onPageChange: (page: number) => void;
   onItemsPerPageChange: (items: number) => void;
 }
@@ -20,9 +20,6 @@ export function Pagination({
   onPageChange,
   onItemsPerPageChange,
 }: PaginationProps) {
-  const startItem = (currentPage - 1) * itemsPerPage + 1;
-  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
-
   const getVisiblePages = () => {
     const pages = [];
     // Ma'lumotlarga qarab maxVisible ni belgilash
@@ -67,10 +64,14 @@ export function Pagination({
         </select>
       </div>
 
-      {/* Records info */}
-      <p className="text-center text-sm text-gray-500">
-        Showing {startItem} to {endItem} out of {totalItems} records
-      </p>
+      {/* Records info - only show if totalItems is provided */}
+      {totalItems && (
+        <p className="text-center text-sm text-gray-500">
+          Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+          {Math.min(currentPage * itemsPerPage, totalItems)} out of {totalItems}{" "}
+          records
+        </p>
+      )}
 
       {/* Page navigation */}
       <div className="flex items-center justify-center gap-2">

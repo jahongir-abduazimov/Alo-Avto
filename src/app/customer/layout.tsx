@@ -1,13 +1,14 @@
+import CustomerAppBar from "@/components/layout/customer-app-bar";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body suppressHydrationWarning className={`antialiased bg-blue-300`}>
-        {children}
-      </body>
-    </html>
+    <div className="min-h-screen bg-red-100 pb-20">
+      {children}
+      <CustomerAppBar />
+    </div>
   );
 }

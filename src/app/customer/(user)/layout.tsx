@@ -1,3 +1,4 @@
+import CustomerAppBar from "@/components/layout/customer-app-bar";
 import Container from "@/components/layout/container";
 import Navbar from "@/components/layout/navbar";
 import React from "react";

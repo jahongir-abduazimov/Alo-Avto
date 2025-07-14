@@ -1,10 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-* {
-  font-family: Lexend, sans-serif;
-}
-
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -132,11 +128,10 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50 font-[Lexend];
+    @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
-    font-family: Lexend, sans-serif;
   }
 }
 
@@ -146,4 +141,13 @@
     #224462 17.49%,
     #2cb391 100%
   );
+}
+
+/* background: radial-gradient(63.25% 56.19% at 69.59% 68.04%, #F4BB34 0%, #EC6B1D 82.51%) warning: gradient uses a rotation that is not supported by CSS and may not behave as expected; */
+
+/* <div class="bg-[radial-gradient(63.25%_56.19%_at_69.59%_68.04%,_#F4BB34_17.49%,_#EC6B1D_100%)]"></div> */
+
+.custom-drawer-content::after {
+  content: none !important;
+  display: none !important;
 }

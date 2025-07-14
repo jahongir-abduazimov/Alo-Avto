@@ -1,41 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Search, SlidersHorizontal, Plus, Edit2, Trash2 } from "lucide-react";
 import { Pagination } from "@/components/pagination";
-
-interface Client {
-  id: string;
-  name: string;
-  avatarUrl: string;
-  phone: string;
-  telegram: string;
-  address: string;
-  email: string;
-}
-
-const mockClients: Client[] = Array(4)
-  .fill(null)
-  .map((_, index) => ({
-    id: (index + 1).toString(),
-    name: "Kathryn Murphy",
-    avatarUrl: `/placeholder.svg?width=40&height=40&query=woman+profile+${index}`,
-    phone: "(270) 555-0117",
-    telegram: "@gulomjon",
-    address: "ул. Ранчвью, 3891, Ричардсон, Калифорния, 62639",
-    email: "kathryn.murphy@example.com",
-  }));
+import { getUsers } from "@/lib/api";
+import { User } from "@/types/user";
 
 export default function CustomerClient() {
   const [searchTerm, setSearchTerm] = useState("");
   const [itemsPerPage, setItemsPerPage] = useState("10");
   const [currentPage, setCurrentPage] = useState(1);
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const totalRecords = 50; // Example total records
+  useEffect(() => {
+    getUsers()
+      .then((data) => setUsers(data))
+      .catch((err) => {
+        setError("Ma'lumotlarni olishda xatolik");
+        console.error(err);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const totalRecords = users.length;
   const totalPages = Math.ceil(totalRecords / Number.parseInt(itemsPerPage));
 
   const handlePageChange = (page: number) => {
@@ -44,15 +36,17 @@ export default function CustomerClient() {
     }
   };
 
-  // Placeholder for client data based on pagination
-  const displayedClients = mockClients.slice(
+  // Foydalanuvchilarni paginatsiya qilish
+  const displayedUsers = users.slice(
     (currentPage - 1) * Number.parseInt(itemsPerPage),
     currentPage * Number.parseInt(itemsPerPage)
   );
 
+  if (loading) return <p>Yuklanmoqda...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
+  if (!users.length) return <p>Foydalanuvchilar topilmadi</p>;
   return (
-    <div className="">
-      {" "}
+    <div className="py-5 pb-16">
       {/* Changed to white bg for page, max-w-md */}
       <header className="mb-5">
         <h1 className="text-3xl font-bold text-gray-900">Клиенты</h1>
@@ -81,22 +75,22 @@ export default function CustomerClient() {
         </Button>
       </div>
       <div className="space-y-3">
-        {displayedClients.map((client) => (
+        {displayedUsers.map((user) => (
           <Card
-            key={client.id}
+            key={user.id}
             className="bg-[#F7F8FA] rounded-2xl p-4 shadow-sm border-none"
           >
-            <div className="flex items-center mb-4">
-              <Avatar className="h-12 w-12 mr-4">
-                <AvatarImage
-                  src={client.avatarUrl || "/placeholder.svg"}
-                  alt={client.name}
-                />
-                <AvatarFallback>{client.name.substring(0, 1)}</AvatarFallback>
-              </Avatar>
-              <h3 className="flex-grow text-lg font-medium text-gray-900">
-                {client.name}
-              </h3>
+            <div className="flex items-center mb-2">
+              <div className="flex-grow">
+                <p className="font-semibold text-base text-gray-900">
+                  {user.first_name || user.last_name
+                    ? `${user.first_name || ""} ${user.last_name || ""}`.trim()
+                    : user.username || "Имя не указано"}
+                </p>
+                <p className="text-gray-500 text-sm">
+                  {user.role || "Роль не указана"}
+                </p>
+              </div>
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
@@ -114,17 +108,18 @@ export default function CustomerClient() {
                 </Button>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-x-4">
-              <div className="space-y-2 text-sm">
-                <p className="text-gray-800">{client.phone}</p>
-                <div>
-                  <p className="text-gray-500">Telegram-ник:</p>
-                  <p className="text-gray-800">{client.telegram}</p>
-                </div>
+            <div className="flex gap-6 text-sm mt-2">
+              <div>
+                <span className="text-gray-400 mr-1">Telegram-ник</span>
+                <span className="text-gray-800">
+                  {user.telegram_username || "Не указан"}
+                </span>
               </div>
-              <div className="space-y-1 text-sm text-gray-800 break-words">
-                <p>{client.address}</p>
-                <p>{client.email}</p>
+              <div>
+                <span className="text-gray-400 mr-1">Мобильный номер</span>
+                <span className="text-gray-800">
+                  {user.phone_number || "Не указан"}
+                </span>
               </div>
             </div>
           </Card>
@@ -135,7 +130,6 @@ export default function CustomerClient() {
           currentPage={currentPage}
           totalPages={totalPages}
           itemsPerPage={Number.parseInt(itemsPerPage)}
-          totalItems={totalRecords}
           onPageChange={handlePageChange}
           onItemsPerPageChange={(items) => setItemsPerPage(items.toString())}
         />

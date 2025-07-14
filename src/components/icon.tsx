@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 interface IconProps {
   name: string;
@@ -18,7 +18,6 @@ export function Icon({
   const [svgContent, setSvgContent] = useState<string>("");
 
   useEffect(() => {
-    // Fetch the SVG file
     fetch(`/icons/${name}.svg`)
       .then((response) => {
         if (!response.ok) {
@@ -27,32 +26,24 @@ export function Icon({
         return response.text();
       })
       .then((text) => {
-        // Process the SVG content to add custom properties
-        const parser = new DOMParser();
-        const svgDoc = parser.parseFromString(text, "image/svg+xml");
-        const svgElement = svgDoc.documentElement;
-
-        // Apply color and size
-        svgElement.setAttribute("width", `${size}`);
-        svgElement.setAttribute("height", `${size}`);
-        svgElement.setAttribute("fill", color);
-
-        // Convert back to string
-        const serializer = new XMLSerializer();
-        const processedSvg = serializer.serializeToString(svgElement);
-
-        setSvgContent(processedSvg);
+        // Replace any fill attributes with fill="currentColor"
+        let processed = text.replace(
+          /fill="(?!none)[^"]*"/gi,
+          'fill="currentColor"'
+        );
+        setSvgContent(processed);
       })
       .catch((error) => {
+        setSvgContent("");
         console.error(error);
       });
-  }, [name, size, color]);
+  }, [name]);
 
   return (
     <span
-      className={`inline-block ${className}`}
+      className={className}
+      style={{ color, width: size, height: size, display: "inline-block" }}
       dangerouslySetInnerHTML={{ __html: svgContent }}
-      style={{ width: size, height: size }}
     />
   );
 }
